@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D VFD & Induction Motor Virtual Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts for industrial & digital displays -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- TOP INDUSTRIAL STATUS BAR -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>VFD-3000 PRO</h1>
+          <span>INDUSTRIAL 3D VIRTUAL LAB</span>
+        </div>
+      </div>
+
+      <!-- Live VFD Operational Status Banner -->
+      <div class="status-banner">
+        <div class="status-indicator">
+          <span class="led-light" id="ledPower"></span>
+          <span class="led-label">PWR</span>
+        </div>
+        <div class="status-indicator">
+          <span class="led-light" id="ledRun"></span>
+          <span class="led-label">RUN</span>
+        </div>
+        <div class="status-indicator">
+          <span class="led-light" id="ledFault"></span>
+          <span class="led-label">FAULT</span>
+        </div>
+        <div class="status-indicator">
+          <span class="led-light" id="ledDir"></span>
+          <span class="led-label" id="dirLabel">FWD</span>
+        </div>
+        <div class="system-state-badge" id="systemStateBadge">READY</div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="top-actions">
+        <button id="btnAudioToggle" class="btn-icon" title="Toggle Sound (Motor & Inverter audio)">
+          <svg id="iconAudioOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="iconAudioOff" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <span id="audioStatusText">AUDIO ON</span>
+        </button>
+
+        <button id="btnWiringToggle" class="btn-icon active" title="Toggle Animated Current Flow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+          <span>CURRENT FLOW</span>
+        </button>
+
+        <div class="camera-preset-group">
+          <label for="cameraSelect">VIEW:</label>
+          <select id="cameraSelect">
+            <option value="default">Overview</option>
+            <option value="vfd">VFD Panel</option>
+            <option value="motor">Induction Motor</option>
+            <option value="wiring">Wiring / Terminals</option>
+            <option value="top">Top View</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN INTERACTION WORKSPACE -->
+    <main class="main-content">
+      <!-- LEFT CONTROL PANEL (OPERATOR SCADA STATION) -->
+      <aside class="panel left-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span>VFD OPERATOR STATION</span>
+          </div>
+          <span class="badge">CH 01</span>
+        </div>
+
+        <div class="panel-body">
+          <!-- Primary Mechanical Push Buttons -->
+          <div class="control-section">
+            <label class="section-label">PRIMARY 3-BUTTON CONTROL</label>
+            <div class="push-button-bank">
+              <button id="btnStart" class="btn-push btn-start">
+                <span class="btn-ring"></span>
+                <span class="btn-cap">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  START
+                </span>
+              </button>
+
+              <button id="btnStop" class="btn-push btn-stop">
+                <span class="btn-ring"></span>
+                <span class="btn-cap">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12"></rect>
+                  </svg>
+                  STOP
+                </span>
+              </button>
+
+              <button id="btnReset" class="btn-push btn-reset">
+                <span class="btn-ring"></span>
+                <span class="btn-cap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  RESET
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Frequency Control Section -->
+          <div class="control-section">
+            <div class="section-label-row">
+              <label class="section-label" for="sliderFreq">FREQUENCY SETPOINT (Hz)</label>
+              <div class="digital-value-pill" id="dispFreqTarget">50.00 Hz</div>
+            </div>
+
+            <!-- Interactive Rotary & Slider Setpoint -->
+            <div class="frequency-controls">
+              <div class="dial-wrapper">
+                <div class="rotary-dial" id="rotaryDial">
+                  <div class="dial-indicator" id="dialIndicator"></div>
+                </div>
+                <span class="dial-caption">POTENTIOMETER</span>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="sliderFreq" min="0" max="60" step="0.1" value="50.0">
+                <div class="slider-ticks">
+                  <span>0</span>
+                  <span>15</span>
+                  <span>30</span>
+                  <span>45</span>
+                  <span>60</span>
+                </div>
+                <div class="quick-preset-btns">
+                  <button class="btn-chip" data-freq="10">10 Hz</button>
+                  <button class="btn-chip" data-freq="25">25 Hz</button>
+                  <button class="btn-chip" data-freq="50">50 Hz</button>
+                  <button class="btn-chip" data-freq="60">60 Hz</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direction & Mode Toggles -->
+          <div class="control-section">
+            <label class="section-label">ROTATION & DRIVE MODE</label>
+            <div class="toggle-group">
+              <button id="btnDirToggle" class="btn-toggle active">
+                <span class="toggle-text">DIRECTION: <strong id="lblDirection">FORWARD</strong></span>
+                <span class="toggle-arrow" id="arrowDirection">&#x21BB;</span>
+              </button>
+              <button id="btnJogMode" class="btn-toggle">
+                <span class="toggle-text">JOG MODE (5 Hz)</span>
+                <span class="toggle-switch"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ramp & Tuning Parameters -->
+          <div class="control-section">
+            <label class="section-label">RAMP TIMES (ACCEL / DECEL)</label>
+            <div class="dual-range-group">
+              <div class="range-field">
+                <div class="field-info">
+                  <span>ACCEL (t<sub>acc</sub>)</span>
+                  <span id="dispValAcc">3.0 s</span>
+                </div>
+                <input type="range" id="sliderAcc" min="0.5" max="10.0" step="0.5" value="3.0">
+              </div>
+              <div class="range-field">
+                <div class="field-info">
+                  <span>DECEL (t<sub>dec</sub>)</span>
+                  <span id="dispValDec">3.0 s</span>
+                </div>
+                <input type="range" id="sliderDec" min="0.5" max="10.0" step="0.5" value="3.0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Motor Load Simulation -->
+          <div class="control-section">
+            <div class="section-label-row">
+              <label class="section-label" for="sliderLoad">MECHANICAL LOAD DYNAMICS</label>
+              <div class="digital-value-pill" id="dispLoadVal">25% (Normal)</div>
+            </div>
+            <input type="range" id="sliderLoad" min="0" max="125" step="5" value="25">
+            <div class="load-caption">
+              <span>No-Load (0%)</span>
+              <span>Full Load (100%)</span>
+              <span class="warning-text">Overload (125%)</span>
+            </div>
+          </div>
+
+          <!-- Simulated Fault Injection for Lab Testing -->
+          <div class="control-section fault-section">
+            <label class="section-label">FAULT TESTING INJECTION</label>
+            <div class="fault-buttons">
+              <button id="btnInjectOL" class="btn-fault" title="Simulate Motor Thermal Overload">
+                TRIGGER OVERLOAD (E.OL)
+              </button>
+              <button id="btnInjectOV" class="btn-fault" title="Simulate DC Bus Overvoltage">
+                TRIGGER OVERVOLT (E.OV)
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER 3D VIEWPORT -->
+      <section class="viewport-container" id="viewportContainer">
+        <!-- Three.js Canvas Container -->
+        <div id="threeCanvasHolder"></div>
+
+        <!-- Interactive 3D Overlay Clues -->
+        <div class="canvas-hud">
+          <div class="hud-item hud-left">
+            <span class="hud-dot"></span>
+            <span>3D INTERACTIVE LAB: CLICK BUTTONS ON VFD OR ROTATE DIAL TO OPERATE</span>
+          </div>
+          <div class="hud-item hud-right">
+            <span>HOLD LEFT-CLICK TO ROTATE &bull; SCROLL TO ZOOM &bull; RIGHT-CLICK TO PAN</span>
+          </div>
+        </div>
+
+        <!-- Floating 3D Interaction Tooltip -->
+        <div id="interactionTooltip" class="interaction-tooltip hidden">
+          <span id="tooltipText">Click to Interact</span>
+        </div>
+      </section>
+
+      <!-- RIGHT TELEMETRY & MULTI-METER PANEL -->
+      <aside class="panel right-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>MOTOR TELEMETRY & SENSORS</span>
+          </div>
+          <span class="badge badge-live">LIVE</span>
+        </div>
+
+        <div class="panel-body">
+          <!-- Primary Large 7-Segment Digital Meters -->
+          <div class="meters-grid">
+            <!-- Output Frequency Meter -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">OUTPUT FREQUENCY</span>
+                <span class="meter-unit">Hz</span>
+              </div>
+              <div class="meter-value segment-font" id="meterFreq">00.00</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="barFreq" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Motor Shaft Speed (RPM) -->
+            <div class="meter-card highlight">
+              <div class="meter-header">
+                <span class="meter-title">ROTOR SPEED</span>
+                <span class="meter-unit">RPM</span>
+              </div>
+              <div class="meter-value segment-font text-cyan" id="meterRpm">0000</div>
+              <div class="meter-sub">
+                <span>SYNCH: <b id="meterSyncRpm">0</b> RPM</span>
+                <span>SLIP: <b id="meterSlip">0.0%</b></span>
+              </div>
+            </div>
+
+            <!-- Motor Terminal RMS Voltage -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">OUTPUT VOLTAGE (V/f)</span>
+                <span class="meter-unit">V<sub>rms</sub></span>
+              </div>
+              <div class="meter-value segment-font text-amber" id="meterVoltage">000</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill fill-amber" id="barVoltage" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Motor Line Current -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">MOTOR CURRENT</span>
+                <span class="meter-unit">AMPS</span>
+              </div>
+              <div class="meter-value segment-font text-green" id="meterCurrent">0.0</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill fill-green" id="barCurrent" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Mechanical Torque -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">ELECTROMAGNETIC TORQUE</span>
+                <span class="meter-unit">N&bull;m</span>
+              </div>
+              <div class="meter-value segment-font text-purple" id="meterTorque">0.0</div>
+              <div class="meter-sub">
+                <span>RATED: 14.3 N&bull;m</span>
+                <span id="torquePercent">0%</span>
+              </div>
+            </div>
+
+            <!-- Estimated Motor Core Temperature -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">MOTOR TEMP</span>
+                <span class="meter-unit">&deg;C</span>
+              </div>
+              <div class="meter-value segment-font" id="meterTemp">24.5</div>
+              <div class="meter-sub">
+                <span>AMBIENT: 25&deg;C</span>
+                <span id="tempStatus" class="status-ok">NORMAL</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Waveform Oscilloscope -->
+          <div class="oscilloscope-section">
+            <div class="scope-header">
+              <div class="scope-title">
+                <span class="pulse-dot"></span>
+                <span>3-PHASE OUTPUT OSCILLOSCOPE</span>
+              </div>
+              <div class="scope-mode-tabs">
+                <button class="btn-tab active" id="tabSine">SINE</button>
+                <button class="btn-tab" id="tabPwm">PWM INVERTER</button>
+              </div>
+            </div>
+            <div class="scope-screen">
+              <canvas id="scopeCanvas" width="360" height="120"></canvas>
+              <div class="scope-legend">
+                <span class="phase-u">Phase U (0&deg;)</span>
+                <span class="phase-v">Phase V (120&deg;)</span>
+                <span class="phase-w">Phase W (240&deg;)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Electrical Specifications Info Card -->
+          <div class="spec-card">
+            <div class="spec-row">
+              <span>Drive Rating:</span>
+              <strong>400V 3-Phase, 2.2 kW / 3.0 HP</strong>
+            </div>
+            <div class="spec-row">
+              <span>Motor Specs:</span>
+              <strong>4-Pole Squirrel Cage Induction, 1440 RPM @ 50Hz</strong>
+            </div>
+            <div class="spec-row">
+              <span>Modulation:</span>
+              <strong>Space Vector PWM (4.0 kHz Carrier)</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- BOTTOM LAB DRAWER / EXPERIMENTS & WIRING INFO -->
+    <footer class="bottom-drawer" id="bottomDrawer">
+      <div class="drawer-header" id="drawerToggle">
+        <div class="drawer-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>VIRTUAL LAB EXPERIMENTS & WIRING SCHEMATICS</span>
+        </div>
+        <span class="drawer-arrow" id="drawerArrow">&#x25B2;</span>
+      </div>
+
+      <div class="drawer-content" id="drawerContent">
+        <div class="experiments-grid">
+          <div class="exp-card active" data-exp="1">
+            <div class="exp-num">EXP 01</div>
+            <div class="exp-title">V/f Speed Control & Slip Analysis</div>
+            <p>Observe how rotor RPM varies linearly with inverter frequency. Increase mechanical load to watch rotor slip increase as the rotor pulls back from synchronous speed.</p>
+            <button class="btn-exp-apply" data-action="exp1">Load Experiment 1</button>
+          </div>
+
+          <div class="exp-card" data-exp="2">
+            <div class="exp-num">EXP 02</div>
+            <div class="exp-title">Ramp Time & Inrush Current Dynamics</div>
+            <p>Set short acceleration time (0.5s) vs long acceleration time (5.0s). Watch peak starting current spikes on the current meter during acceleration.</p>
+            <button class="btn-exp-apply" data-action="exp2">Load Experiment 2</button>
+          </div>
+
+          <div class="exp-card" data-exp="3">
+            <div class="exp-num">EXP 03</div>
+            <div class="exp-title">Overload Thermal Trip & Drive Reset</div>
+            <p>Inject an overload condition or raise load to 125%. Observe the VFD trip with fault code <code>E.OL</code>. Use the RESET button to clear the fault.</p>
+            <button class="btn-exp-apply" data-action="exp3">Load Experiment 3</button>
+          </div>
+
+          <div class="exp-card" data-exp="4">
+            <div class="exp-num">EXP 04</div>
+            <div class="exp-title">Direction Reversal & Phase Sequencing</div>
+            <p>Toggle direction between Forward and Reverse. Notice how the VFD safely decelerates the motor to 0 Hz before smoothly reversing phase sequence to reach target speed.</p>
+            <button class="btn-exp-apply" data-action="exp4">Load Experiment 4</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Three.js Library & OrbitControls (Local offline with CDN fallback) -->
+  <script src="lib/three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+  <script src="lib/OrbitControls.js"></script>
+  <script>
+    if (typeof THREE === 'object' && typeof THREE.OrbitControls === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+    }
+  </script>
+
+  <!-- Application Logic -->
+  <script src="script.js"></script>
+</body>
+</html>
